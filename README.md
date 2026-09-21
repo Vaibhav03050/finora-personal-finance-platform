@@ -1,27 +1,31 @@
-# Finora — AI-Powered Personal Finance Platform
+# Finora — Personal Finance & Goal Planning Platform
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Python](https://img.shields.io/badge/python-3.12-blue.svg)
-![FastAPI](https://img.shields.io/badge/FastAPI-backend-009688.svg)
+![Python](https://img.shields.io/badge/Python-3.12-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115.6-009688.svg)
+![Docker](https://img.shields.io/badge/Docker-supported-2496ED.svg)
 
 > **Understand your money. Plan with confidence. Build better habits.**
 
-Finora is a personal finance platform designed to help users understand their spending, plan financial goals, improve saving habits, and learn essential financial concepts through a simple and approachable experience.
+Finora is a personal finance web application that helps users record and review transactions, import bank-statement data, understand spending patterns, plan financial goals, and explore beginner-friendly financial concepts.
+The application combines a FastAPI backend with a lightweight HTML, CSS, and JavaScript frontend. It supports local SQLite storage, optional AI-assisted coaching, OCR-based document processing, transaction categorization, analytics, and Docker-based execution.
 
 ## Features
 
-- **Personalized onboarding** with manual entry, statement import, and beginner-friendly estimates
-- **Transaction management** for recording, editing, reviewing, and organizing income and expenses
-- **Statement import** with CSV/PDF processing and review-before-confirmation workflows
-- **Automatic categorization** using rule-based classification with an ML fallback
-- **Spending analytics** for income, expenses, savings, categories, and trends
-- **Financial Health Score** with transparent explanations and actionable insights
-- **Savings Planner** with practical, category-based saving suggestions
-- **Financial Goals** with progress tracking and monthly saving guidance
-- **AI Money Coach** for contextual financial explanations and guidance
-- **Financial learning modules** covering saving, compounding, SIPs, risk, and other core concepts
-- **Investment Simulator** for illustrative compound-growth calculations
-- **Authentication and privacy controls** with protected user data and account-level actions
+- **User authentication** with account-level access controls and JWT-based sessions.
+- **Personalized onboarding** with manual financial-profile entry and beginner-friendly estimates.
+- **Transaction management** for creating, viewing, editing, filtering, and deleting income and expense records.
+- **Transaction import** through CSV bank exports, bank-statement PDFs, and statement or receipt images.
+- **Review-before-confirmation workflow** for imported transaction rows before they are saved to the ledger.
+- **Transaction categorization** using deterministic keyword rules with a TF-IDF and Logistic Regression fallback for unfamiliar descriptions.
+- **Spending analytics** covering income, expenses, savings, categories, and trends.
+- **Financial Health Score** with an explainable breakdown based on savings rate, expense-to-income ratio, emergency savings, and debt/EMI burden.
+- **Savings suggestions** based on spending categories and observed trends.
+- **Financial goals** with progress tracking, target dates, and monthly saving guidance.
+- **AI Money Coach** that uses financial context from the user's data and supports an optional external AI provider; a deterministic fallback is available when no provider is configured.
+- **Financial education** covering saving, budgeting, emergency funds, compounding, SIPs, mutual funds, fixed deposits, risk, diversification, and related concepts.
+- **Investment simulator** for illustrative compound-growth calculations and educational investment comparisons.
+- **Security-oriented safeguards** including upload validation, request rate limiting, security headers, protected routes, and audit logging for selected account actions.
 
 ## Screenshots
 
@@ -29,36 +33,44 @@ Finora is a personal finance platform designed to help users understand their sp
 |---|---|
 | ![Dashboard](screenshots/dashboard.png) | ![Transactions](screenshots/transactions.png) |
 
-| Add Data / Upload | Goals |
+| Statement / Data Upload | Goals |
 |---|---|
 | ![Upload](screenshots/upload.png) | ![Goals](screenshots/goals.png) |
 
-| Saving Plan |
+| Savings Plan |
 |---|
-| ![Saving Plan](screenshots/saving-plan.png) |
+| ![Savings Plan](screenshots/saving-plan.png) |
 
 ## Tech Stack
 
 ### Backend
-- Python
+
+- Python 3.12
 - FastAPI
-- SQLModel / SQLAlchemy
-- Pydantic Settings
+- SQLModel
 - SQLite
-- Pandas
-- Scikit-learn
-- JWT authentication
-- OCR with Tesseract
+- Pydantic Settings
+- JWT authentication with `python-jose`
+- Pandas and NumPy
+- Scikit-learn and Joblib
+- Pillow and Tesseract OCR
+- PyMuPDF for PDF processing
+- Pytest for automated tests
 
 ### Frontend
+
 - HTML
 - CSS
 - Vanilla JavaScript
-- Responsive, hash-based client-side navigation
+- Hash-based client-side navigation
+- Responsive interface served by the FastAPI application
 
-### DevOps
+### DevOps and Runtime
+
 - Docker
 - Docker Compose
+- Persistent Docker volume for SQLite data
+- Uvicorn application server
 
 ## Project Structure
 
@@ -67,25 +79,48 @@ finora/
 ├── backend/
 │   ├── app/
 │   │   ├── routers/
+│   │   │   ├── admin.py
+│   │   │   ├── analytics.py
+│   │   │   ├── assistant.py
+│   │   │   ├── auth.py
+│   │   │   ├── education.py
+│   │   │   ├── goals.py
+│   │   │   ├── profile.py
+│   │   │   ├── simulator.py
+│   │   │   ├── transactions.py
+│   │   │   └── uploads.py
 │   │   ├── services/
+│   │   ├── ml/
+│   │   │   └── categorizer.joblib
 │   │   ├── main.py
 │   │   ├── models.py
 │   │   ├── schemas.py
 │   │   ├── database.py
 │   │   ├── auth.py
-│   │   └── config.py
+│   │   ├── config.py
+│   │   └── rate_limit.py
 │   ├── tests/
 │   └── requirements.txt
 ├── frontend/
 │   ├── templates/
 │   └── static/
+├── screenshots/
 ├── Dockerfile
 ├── docker-compose.yml
 ├── .env.example
+├── .gitignore
+├── LICENSE
 └── README.md
 ```
 
 ## Getting Started
+
+### Prerequisites
+
+- Python 3.12
+- Git
+- Optional: Docker Desktop for containerized execution
+- Tesseract OCR for local image OCR processing when running outside Docker
 
 ### 1. Clone the repository
 
@@ -100,10 +135,10 @@ cd finora-personal-finance-platform
 python -m venv .venv
 ```
 
-**Windows:**
+**Windows PowerShell:**
 
-```bash
-.venv\Scripts\activate
+```powershell
+.venv\Scripts\Activate.ps1
 ```
 
 **macOS / Linux:**
@@ -115,68 +150,91 @@ source .venv/bin/activate
 ### 3. Install dependencies
 
 ```bash
-pip install -r backend/requirements.txt
+python -m pip install -r backend/requirements.txt
 ```
 
 ### 4. Configure environment variables
 
-Create a `.env` file from the example:
+Copy the example environment file:
 
-```bash
-copy .env.example .env
+**Windows PowerShell:**
+
+```powershell
+Copy-Item .env.example .env
 ```
 
-For macOS/Linux:
+**macOS / Linux:**
 
 ```bash
 cp .env.example .env
 ```
 
-Update the environment values before running the application.
+Review the values in `.env`. In particular, replace the development JWT secret before using the application in any real or public deployment.
 
-### 5. Start the application
+The default configuration uses SQLite and does not require an external AI provider. To enable an external AI provider for the AI Money Coach, configure the relevant provider, API key, base URL, and model values.
+
+### 5. Run the application locally
 
 From the project root:
 
 ```bash
-uvicorn backend.app.main:app --reload
+python -m uvicorn backend.app.main:app --reload
 ```
 
-Open the application in your browser using the local URL shown by Uvicorn.
+Open the local URL shown in the terminal, normally:
 
-### Docker
+```text
+http://127.0.0.1:8000
+```
 
-To run Finora with Docker Compose:
+### Docker Compose
+
+Build and start the application:
 
 ```bash
 docker compose up --build
 ```
 
-To stop the services:
+Stop the application:
 
 ```bash
 docker compose down
 ```
+
+Docker Compose exposes the application on port `8000` and stores SQLite data in a persistent Docker volume.
 
 ## Testing
 
 Run the backend test suite from the project root:
 
 ```bash
-pytest backend/tests -q
+python -m pytest backend/tests -q
 ```
 
-## Security
+The test suite includes coverage for areas such as:
 
-- Keep secrets in environment variables.
-- Do not commit `.env` files or private credentials.
-- Use a strong production secret key.
-- Review uploaded financial documents before confirming imported transactions.
-- Use HTTPS and production-ready configuration when deploying publicly.
+- Authentication and API integration
+- Transactions and financial calculations
+- Goals and health-score logic
+- CSV and PDF import behavior
+- OCR and upload validation
+- Categorization and natural-language transaction parsing
+- AI Coach behavior
+- Rate limiting, CORS, and security hardening
+- Upload-related frontend behavior
+
+## Security and Privacy Notes
+
+- Keep secrets in environment variables and do not commit `.env` files.
+- Replace the development JWT secret before deployment.
+- Review imported transaction rows before confirming them.
+- Avoid uploading real financial documents to public demonstrations or shared environments.
+- Use HTTPS and production-grade configuration before exposing the application publicly.
+- Treat the included financial calculations, simulations, and suggestions as informational rather than guaranteed financial advice.
 
 ## Disclaimer
 
-Finora is an educational and personal financial management application. Its calculations, simulations, and suggestions are intended for informational purposes and should not be treated as guaranteed financial advice or investment recommendations.
+Finora is an educational and personal financial management application. Its calculations, simulations, and suggestions are intended for informational purposes only and should not be treated as personalized financial advice, investment recommendations, or guaranteed outcomes.
 
 ## License
 
