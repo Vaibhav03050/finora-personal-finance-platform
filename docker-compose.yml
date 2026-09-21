@@ -1,0 +1,27 @@
+services:
+  finora:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:////app/data/finora.db
+      - FIN_JWT_SECRET=${FIN_JWT_SECRET:-change-me-in-production}
+      - FIN_JWT_ALGORITHM=HS256
+      - FIN_JWT_EXPIRE_MINUTES=30
+      - FIN_AI_PROVIDER=${FIN_AI_PROVIDER:-none}
+      - FIN_AI_API_KEY=${FIN_AI_API_KEY:-}
+      - FIN_AI_BASE_URL=${FIN_AI_BASE_URL:-https://api.openai.com/v1}
+      - FIN_AI_MODEL=${FIN_AI_MODEL:-gpt-4o-mini}
+      - CORS_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
+    volumes:
+      - finora_data:/app/data
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  finora_data:

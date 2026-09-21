@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.db
+*.db-journal
+.env
+node_modules/
+.pytest_cache/
+*.egg-info/
+.DS_Store
+venv/
+.venv/
+.vscode/
+.idea/
+*.log
+Thumbs.db
